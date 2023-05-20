@@ -1,0 +1,12 @@
+Flask >= 2.3.2
+python-dotenv >= 1.0.0
+PyMySQL >= 1.0.3
+PyMySQL[rsa] >= 1.0.3
+Flask-SQLAlchemy >= 3.0.3
+Flask-Migrate >= 4.0.4
+Flask-WTF >= 1.1.1
+WTForms-SQLAlchemy >= 0.3
+Flask-Markdown >= 0.3
+python-slugify >= 8.0.1
+Pillow >= 9.5.0
+email_validator >= 2.0.0

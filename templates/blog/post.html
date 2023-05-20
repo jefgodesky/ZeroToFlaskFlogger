@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if action == "new" %}New Blog Post{% else %}Editing "{{ post.title }}"{% endif %}
+{% endblock %}
+
+{% block nav %}{% include "nav.html" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="offset-md-2 col-md-8">
+    <h2>{% if action == "new" %}New Blog Post{% else %}Editing &ldquo;{{ post.title }}&rdquo;{% endif %}</h2>
+
+    {% from "_formhelpers.html" import render_field %}
+
+    <form method="POST"
+      action="{% if action == 'new' %}{{ url_for('.post') }}{% else %}{{ url_for('.edit', slug=post.slug) }}{% endif %}"
+      enctype="multipart/form-data"
+      role="form">
+      {{ form.hidden_tag() }}
+
+      {% if post and post.image %}
+      <img src="{{ url_for('static', filename='images/uploads/' + post.image + '.sm.png') }}" class="img-thumbnail" alt="Current image for this post" />
+      {% endif %}
+
+      {{ render_field(form.image, class='form-control') }}
+      {{ render_field(form.title, class='form-control') }}
+      {{ render_field(form.body, class='form-control', rows=10) }}
+      {{ render_field(form.category, class='form-control') }}
+      {{ render_field(form.new_category, class='form-control') }}
+
+      <div class="form-group">
+        <label for="tags_field">Tags</label>
+        <input class="form-control" id="tags_field" name="tags_field" type="text" value="{{ tags_field }}" />
+      </div>
+
+      <button class="btn btn-primary">{% if action == "new" %}Post{% else %}Save{% endif %}</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

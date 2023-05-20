@@ -1,0 +1,5 @@
+.flaskenv
+.idea
+__pycache__
+static
+venv

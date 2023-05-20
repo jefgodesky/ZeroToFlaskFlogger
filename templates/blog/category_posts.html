@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ config['BLOG_NAME'] }}{% endblock %}
+
+{% block nav %}{% include "nav.html" %}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <main class="offset-md-2 col-md-8">
+    {% include "_flashmessages.html" %}
+
+    <h4>{{ title }}</h4>
+
+    {% include "blog/_article_list.html" %}
+
+    <div class="row">
+      <nav class="offset-md-2 col-md-8 pt-5">
+        {% if posts.has_prev %}
+        <a href="{{ url_for('blog_app.list_category', category_id=category_id, page=posts.prev_num) }}">&laquo; Newer Posts</a>
+        {% endif %}
+        {% if posts.has_next %}
+        <a href="{{ url_for('blog_app.list_category', category_id=category_id, page=posts.next_num) }}">Older Posts &raquo;</a>
+        {% endif %}
+      </nav>
+    </div>
+  </main>
+</div>
+{% endblock %}
