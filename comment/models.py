@@ -15,7 +15,8 @@ class Comment(db.Model):
     post = db.relationship('Post', backref=db.backref('comments', lazy='dynamic'))
     author = db.relationship('Author', backref=db.backref('comments', lazy='dynamic'))
 
-    def __init__(self, body, commenter_name=None, commenter_id=None, timestamp=None):
+    def __init__(self, post_id, body, commenter_name=None, commenter_id=None, timestamp=None):
+        self.post_id = post_id
         self.body = body
         self.timestamp = timestamp if timestamp is not None else datetime.utcnow()
         self.commenter_id = commenter_id if commenter_id is not None else None
