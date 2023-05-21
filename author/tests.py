@@ -48,19 +48,21 @@ class AuthorTest(unittest.TestCase):
             confirm_password='test123'
         )
 
-    def register_standard(self):
-        return self.app.post('/register', data=self.data, follow_redirects=True)
+    def register_standard(self, context=None):
+        context = context if context is not None else self.app
+        return context.post('/register', data=self.data, follow_redirects=True)
 
-    def login_standard(self):
-        return self.app.post('/login', data=self.data, follow_redirects=True)
+    def login_standard(self, context=None):
+        context = context if context is not None else self.app
+        return context.post('/login', data=self.data, follow_redirects=True)
 
     def test_user_registration_feedback(self):
         rv = self.register_standard()
         assert 'You are now registered' in str(rv.data)
 
     def test_user_registration_database_record(self):
-        with self.app as c:
-            rv = self.register_standard()
+        with self.app as context:
+            rv = self.register_standard(context)
             assert Author.query.filter_by(email=self.data['email']).count() == 1
 
     def test_user_registration_duplicate_email(self):
@@ -75,8 +77,8 @@ class AuthorTest(unittest.TestCase):
 
     def test_user_login_session(self):
         self.register_standard()
-        with self.app as c:
-            c.post('/login', data=self.data, follow_redirects=True)
+        with self.app as context:
+            self.login_standard(context)
             assert session['id'] == 1
 
     def test_user_login_wrong_password(self):
@@ -91,7 +93,7 @@ class AuthorTest(unittest.TestCase):
 
     def test_user_logout_session(self):
         self.register_standard()
-        with self.app as c:
-            c.post('/login', data=self.data, follow_redirects=True)
-            c.get('/logout', follow_redirects=True)
+        with self.app as context:
+            self.login_standard(context)
+            context.get('/logout', follow_redirects=True)
             assert session.get('id') is None
