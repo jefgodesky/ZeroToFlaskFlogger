@@ -1,6 +1,7 @@
 import unittest
 
 from blog.models import Post
+from comment.models import Comment
 from tag.models import Tag
 from author.tests import AuthorTest
 from application import db, create_app as create_app_base
@@ -51,6 +52,16 @@ class PostTest(unittest.TestCase):
             post = Post.query.first()
             assert post.comments is not None
             assert post.comments.count() == 0
+
+    def test_blog_post_has_comment(self):
+        with self.app as context:
+            self.post_standard(context)
+            comment = Comment(1, 'This is a comment.')
+            db.session.add(comment)
+            db.session.commit()
+            post = Post.query.first()
+            assert post.comments is not None
+            assert post.comments.count() == 1
 
     def test_blog_post_create_not_logged_in(self):
         rv = self.app.get('/post', follow_redirects=True)
