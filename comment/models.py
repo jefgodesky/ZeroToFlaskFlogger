@@ -10,6 +10,7 @@ class Comment(db.Model):
     body = db.Column(db.Text)
 
     post = db.relationship('Post', backref=db.backref('comments', lazy='dynamic'))
+    author = db.relationship('Author', backref=db.backref('comments', lazy='dynamic'))
 
     def __init__(self, body, commenter_name=None, commenter_id=None):
         self.body = body
@@ -20,3 +21,6 @@ class Comment(db.Model):
 
     def __repr__(self):
         return f'<Comment #{self.id}>'
+
+    def get_commenter(self):
+        return self.author.full_name if self.author else self.commenter_name

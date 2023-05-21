@@ -8,6 +8,7 @@ from settings import ANONYMOUS_COMMENTER_NAME
 from utils.test_db import TestDB
 
 text = 'This is a test comment.'
+commenter_name = 'Jane Doe'
 
 
 class CommentTest(unittest.TestCase):
@@ -38,9 +39,8 @@ class CommentTest(unittest.TestCase):
         assert actual.commenter_id is None
 
     def test_new_comment_with_name(self):
-        name = 'John Doe'
-        actual = Comment(text, commenter_name=name)
-        assert actual.commenter_name == name
+        actual = Comment(text, commenter_name=commenter_name)
+        assert actual.commenter_name == commenter_name
         assert actual.commenter_id is None
 
     def test_new_author_comment(self):
@@ -49,3 +49,17 @@ class CommentTest(unittest.TestCase):
             actual = Comment(text, commenter_id=1)
             assert actual.commenter_name is None
             assert actual.commenter_id == 1
+
+    def test_get_commenter_anonymous(self):
+        actual = Comment(text)
+        assert actual.get_commenter() == ANONYMOUS_COMMENTER_NAME
+
+    def test_get_commenter_explicitly_set(self):
+        actual = Comment(text, commenter_name=commenter_name)
+        assert actual.get_commenter() == commenter_name
+
+    def test_get_commenter_author(self):
+        with self.app as c:
+            self.app.post('/register', data=self.author_data)
+            actual = Comment(text, commenter_id=1)
+            assert actual.get_commenter() == self.author_data['full_name']
