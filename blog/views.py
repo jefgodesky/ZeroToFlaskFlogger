@@ -7,6 +7,7 @@ from PIL import Image
 from settings import BLOG_POST_IMAGES_PATH
 from application import db
 from blog.models import Post
+from comment.models import Comment
 from tag.models import Tag
 from category.models import Category
 from author.models import Author

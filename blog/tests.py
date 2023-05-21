@@ -45,6 +45,13 @@ class PostTest(unittest.TestCase):
         context.post('/login', data=self.author_data)
         return context.post('/post', data=self.post_data, follow_redirects=True)
 
+    def test_blog_post_has_no_comments(self):
+        with self.app as context:
+            self.post_standard(context)
+            post = Post.query.first()
+            assert post.comments is not None
+            assert post.comments.count() == 0
+
     def test_blog_post_create_not_logged_in(self):
         rv = self.app.get('/post', follow_redirects=True)
         assert 'Please log in to continue.' in str(rv.data)
