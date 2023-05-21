@@ -1,5 +1,5 @@
-import datetime
 import unittest
+from datetime import datetime
 
 from comment.models import Comment
 from author.tests import AuthorTest
@@ -32,6 +32,16 @@ class CommentTest(unittest.TestCase):
     def tearDown(self):
         with self.app_factory.app_context():
             self.test_db.drop_db()
+
+    def test_new_comment_default_timestamp(self):
+        actual = Comment(text)
+        after = datetime.utcnow()
+        assert actual.timestamp <= after
+
+    def test_new_comment_set_timestamp(self):
+        timestamp = datetime(1979, 1, 1)
+        actual = Comment(text, timestamp=timestamp)
+        assert actual.timestamp == timestamp
 
     def test_new_anonymous_comment(self):
         actual = Comment(text)
