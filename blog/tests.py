@@ -1,5 +1,4 @@
 import unittest
-from slugify import slugify
 
 from blog.models import Post
 from tag.models import Tag
