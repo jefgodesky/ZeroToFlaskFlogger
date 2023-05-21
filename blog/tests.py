@@ -39,10 +39,11 @@ class PostTest(unittest.TestCase):
             tags_field='testing, unit tests'
         )
 
-    def post_standard(self):
-        self.app.post('/register', data=self.author_data)
-        self.app.post('/login', data=self.author_data)
-        return self.app.post('/post', data=self.post_data, follow_redirects=True)
+    def post_standard(self, context=None):
+        context = context if context is not None else self.app
+        context.post('/register', data=self.author_data)
+        context.post('/login', data=self.author_data)
+        return context.post('/post', data=self.post_data, follow_redirects=True)
 
     def test_blog_post_create_not_logged_in(self):
         rv = self.app.get('/post', follow_redirects=True)
@@ -55,8 +56,8 @@ class PostTest(unittest.TestCase):
         assert self.post_data['new_category'] in str(rv.data)
 
     def test_blog_post_create_success_db_record(self):
-        with self.app as c:
-            self.post_standard()
+        with self.app as context:
+            self.post_standard(context)
             assert Post.query.count() == 1
 
     def test_blog_post_update_success_messaging(self):
@@ -67,10 +68,10 @@ class PostTest(unittest.TestCase):
         assert self.post_data['title'] in str(rv.data)
 
     def test_blog_post_update_success_database(self):
-        with self.app as c:
-            self.post_standard()
+        with self.app as context:
+            self.post_standard(context)
             self.post_data['title'] = 'Updated Title'
-            self.app.post('/posts/1/test-post/edit', data=self.post_data, follow_redirects=True)
+            context.post('/posts/1/test-post/edit', data=self.post_data, follow_redirects=True)
             actual = Post.query.first()
             assert actual.title == self.post_data['title']
 
@@ -81,10 +82,10 @@ class PostTest(unittest.TestCase):
         assert 'updates' in str(rv.data)
 
     def test_blog_post_update_tags_success_database(self):
-        with self.app as c:
-            self.post_standard()
+        with self.app as context:
+            self.post_standard(context)
             self.post_data['tags_field'] = self.post_data['tags_field'] + ', updates'
-            c.post('/posts/1/test-post/edit', data=self.post_data, follow_redirects=True)
+            context.post('/posts/1/test-post/edit', data=self.post_data, follow_redirects=True)
             assert Tag.query.filter_by(name='updates').count() == 1
 
     def test_blog_delete_success_messaging(self):
@@ -93,8 +94,8 @@ class PostTest(unittest.TestCase):
         assert '&#34;Test Post&#34; has been deactivated.' in str(rv.data)
 
     def test_blog_delete_success_database(self):
-        with self.app as c:
-            self.post_standard()
-            self.app.get('/posts/1/test-post/delete', follow_redirects=True)
+        with self.app as context:
+            self.post_standard(context)
+            context.get('/posts/1/test-post/delete', follow_redirects=True)
             actual = Post.query.first()
             assert actual is not None and actual.live is False
