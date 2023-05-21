@@ -6,6 +6,7 @@ from tag.models import Tag
 from author.tests import AuthorTest
 from application import db, create_app as create_app_base
 from utils.test_db import TestDB
+from settings import ANONYMOUS_COMMENTER_NAME
 
 
 class PostTest(unittest.TestCase):
@@ -105,6 +106,70 @@ class PostTest(unittest.TestCase):
             self.post_data['tags_field'] = self.post_data['tags_field'] + ', updates'
             context.post('/posts/1/test-post/edit', data=self.post_data, follow_redirects=True)
             assert Tag.query.filter_by(name='updates').count() == 1
+
+    def test_blog_post_comment_with_name_messaging(self):
+        self.post_standard()
+        data = { 'commenter_name': 'John Doe', 'body': 'This is a test comment.' }
+        self.app.get('/logout', follow_redirects=True)
+        rv = self.app.post('/posts/1/test-post/comment', data=data, follow_redirects=True)
+        assert 'Your comment has been posted.' in str(rv.data)
+        assert data['commenter_name'] in str(rv.data)
+        assert data['body'] in str(rv.data)
+
+    def test_blog_post_comment_with_name_database(self):
+        with self.app as context:
+            self.post_standard(context)
+            data = { 'commenter_name': 'John Doe', 'body': 'This is a test comment.' }
+            context.get('/logout', follow_redirects=True)
+            context.post('/posts/1/test-post/comment', data=data, follow_redirects=True)
+            comment = Comment.query.first()
+            assert comment is not None
+            assert comment.post_id == 1
+            assert comment.commenter_name == data['commenter_name']
+            assert comment.commenter_id is None
+            assert comment.body == data['body']
+
+    def test_blog_post_comment_anonymous_messaging(self):
+        self.post_standard()
+        data = { 'body': 'This is a test comment.' }
+        self.app.get('/logout', follow_redirects=True)
+        rv = self.app.post('/posts/1/test-post/comment', data=data, follow_redirects=True)
+        assert 'Your comment has been posted.' in str(rv.data)
+        assert ANONYMOUS_COMMENTER_NAME in str(rv.data)
+        assert data['body'] in str(rv.data)
+
+    def test_blog_post_comment_anonymous_database(self):
+        with self.app as context:
+            self.post_standard(context)
+            data = { 'body': 'This is a test comment.' }
+            context.get('/logout', follow_redirects=True)
+            context.post('/posts/1/test-post/comment', data=data, follow_redirects=True)
+            comment = Comment.query.first()
+            assert comment is not None
+            assert comment.post_id == 1
+            assert comment.commenter_name == ANONYMOUS_COMMENTER_NAME
+            assert comment.commenter_id is None
+            assert comment.body == data['body']
+
+    def test_blog_post_comment_authenticated_messaging(self):
+        self.post_standard()
+        data = { 'body': 'This is a test comment.' }
+        rv = self.app.post('/posts/1/test-post/comment', data=data, follow_redirects=True)
+        assert 'Your comment has been posted.' in str(rv.data)
+        assert self.author_data['full_name'] in str(rv.data)
+        assert data['body'] in str(rv.data)
+
+    def test_blog_post_comment_authenticated_database(self):
+        with self.app as context:
+            self.post_standard(context)
+            data = { 'body': 'This is a test comment.' }
+            context.post('/posts/1/test-post/comment', data=data, follow_redirects=True)
+            comment = Comment.query.first()
+            assert comment is not None
+            assert comment.post_id == 1
+            assert comment.commenter_name is None
+            assert comment.commenter_id == 1
+            assert comment.body == data['body']
 
     def test_blog_delete_success_messaging(self):
         self.post_standard()

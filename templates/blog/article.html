@@ -40,6 +40,38 @@
       </p>
       {% endif %}
     </div>
+
+    {% for comment in post.comments %}
+    <section class="comment">
+      <hr />
+      <p class="text-muted">
+        {{ comment.commenter_name }}
+        wrote at
+        {{ comment.timestamp.strftime('%H:%M:%S on %-d %B, %Y') }}
+      </p>
+      {{ comment.body|markdown }}
+    </section>
+    {% endfor %}
+
+    <hr />
+    <h2>Post a Comment</h2>
+
+    {% from "_formhelpers.html" import render_field %}
+
+    <form method="POST" action="{{ url_for('.comment', slug=post.slug) }}" role="form">
+      {{ comment_form.hidden_tag() }}
+
+      {% if session.id %}
+      <label>Your Name</label>
+      <p>{{ session.full_name }}</p>
+      {% else %}
+      {{ render_field(comment_form.commenter_name, class='form-control') }}
+      {% endif %}
+
+      {{ render_field(comment_form.body, class='form-control', rows=5) }}
+
+      <button class="btn btn-primary">Post</button>
+    </form>
   </div>
 </div>
 {% endblock %}

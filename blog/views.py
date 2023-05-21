@@ -12,6 +12,7 @@ from tag.models import Tag
 from category.models import Category
 from author.models import Author
 from blog.forms import PostForm
+from comment.forms import CommentForm
 from author.decorators import login_required
 from settings import POSTS_PER_PAGE
 
@@ -70,7 +71,10 @@ def post():
 @blog_app.route('/posts/<path:slug>')
 def article(slug):
     blog_post = Post.query.filter_by(slug=slug).first_or_404()
-    return render_template('blog/article.html', post=blog_post)
+    comment_form = CommentForm()
+    for comment in blog_post.comments:
+        comment.commenter_name = comment.get_commenter()
+    return render_template('blog/article.html', post=blog_post, comment_form=comment_form)
 
 
 @blog_app.route('/posts/<path:slug>/edit', methods=['GET', 'POST'])
@@ -114,6 +118,24 @@ def edit(slug):
         return redirect(url_for('.article', slug=blog_post.slug))
 
     return render_template('blog/post.html', form=form, post=blog_post, action='edit', tags_field=tags_field)
+
+
+@blog_app.route('/posts/<path:slug>/comment', methods=['POST'])
+def comment(slug):
+    blog_post = Post.query.filter_by(slug=slug).first_or_404()
+    comment_form = CommentForm()
+
+    if comment_form.validate_on_submit():
+        commenter_name_data = comment_form.commenter_name.data
+        commenter_name = None if commenter_name_data is None else commenter_name_data.strip()
+        session_id = session.get('id')
+        commenter_id = None if session_id is None else session_id
+        new_comment = Comment(blog_post.id, comment_form.body.data, commenter_name=commenter_name, commenter_id=commenter_id)
+        db.session.add(new_comment)
+        db.session.commit()
+        flash('Your comment has been posted.')
+
+    return redirect(url_for('.article', slug=blog_post.slug))
 
 
 @blog_app.route('/posts/<path:slug>/delete')
