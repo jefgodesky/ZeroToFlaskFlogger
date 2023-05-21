@@ -77,6 +77,10 @@ class CommentTest(unittest.TestCase):
         actual = Comment(1, text, commenter_name=commenter_name)
         assert actual.get_commenter() == commenter_name
 
+    def test_get_commenter_blank_name(self):
+        actual = Comment(1, text, commenter_name='')
+        assert actual.get_commenter() == ANONYMOUS_COMMENTER_NAME
+
     def test_get_commenter_author(self):
         with self.app as context:
             context.post('/register', data=self.author_data)

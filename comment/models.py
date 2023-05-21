@@ -20,11 +20,16 @@ class Comment(db.Model):
         self.body = body
         self.timestamp = timestamp if timestamp is not None else datetime.utcnow()
         self.commenter_id = commenter_id if commenter_id is not None else None
-        self.commenter_name = commenter_name if commenter_name is not None else ANONYMOUS_COMMENTER_NAME
+        self.commenter_name = commenter_name if commenter_name is not None and len(commenter_name) > 0 else ANONYMOUS_COMMENTER_NAME
         self.commenter_name = self.commenter_name if self.commenter_id is None else None
 
     def __repr__(self):
         return f'<Comment #{self.id}>'
 
     def get_commenter(self):
-        return self.author.full_name if self.author else self.commenter_name
+        if self.author:
+            return self.author.full_name
+        elif self.commenter_name is not None:
+            return self.commenter_name if len(self.commenter_name) > 0 else ANONYMOUS_COMMENTER_NAME
+        else:
+            return ANONYMOUS_COMMENTER_NAME
