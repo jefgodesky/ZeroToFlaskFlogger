@@ -4,9 +4,12 @@ from settings import ANONYMOUS_COMMENTER_NAME
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
     commenter_name = db.Column(db.String(255))
     commenter_id = db.Column(db.Integer, db.ForeignKey('author.id'))
     body = db.Column(db.Text)
+
+    post = db.relationship('Post', backref=db.backref('comments', lazy='dynamic'))
 
     def __init__(self, body, commenter_name=None, commenter_id=None):
         self.body = body
