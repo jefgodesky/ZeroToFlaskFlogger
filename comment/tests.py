@@ -1,7 +1,7 @@
+import datetime
 import unittest
 
 from comment.models import Comment
-from author.models import Author
 from author.tests import AuthorTest
 from application import db, create_app as create_app_base
 from settings import ANONYMOUS_COMMENTER_NAME
@@ -44,8 +44,8 @@ class CommentTest(unittest.TestCase):
         assert actual.commenter_id is None
 
     def test_new_author_comment(self):
-        with self.app as c:
-            self.app.post('/register', data=self.author_data)
+        with self.app as context:
+            context.post('/register', data=self.author_data)
             actual = Comment(text, commenter_id=1)
             assert actual.commenter_name is None
             assert actual.commenter_id == 1
@@ -59,7 +59,9 @@ class CommentTest(unittest.TestCase):
         assert actual.get_commenter() == commenter_name
 
     def test_get_commenter_author(self):
-        with self.app as c:
-            self.app.post('/register', data=self.author_data)
+        with self.app as context:
+            context.post('/register', data=self.author_data)
             actual = Comment(text, commenter_id=1)
+            db.session.add(actual)
+            db.session.commit()
             assert actual.get_commenter() == self.author_data['full_name']
